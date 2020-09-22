@@ -1247,14 +1247,15 @@ mod mine_chain {
 				foundation::save_in_disk(serialized, &Path::new("./tests/assets"));
 				global::set_foundation_path("./tests/assets/foundation/foundation.json".to_string());
 			};
-		then regex "I try to spend the foundation's transaction on the height <([0-9]+)> plus <([0-9]+)>" |world, matches, step| {
-		// then regex "I try to spend (should be <([a-zA-Z]+)>) the foundation's transaction on the height <([0-9]+)> plus <([0-9]+)>" |world, matches, step| {
+
+		then regex "I try to spend the foundation's transaction on the height <([0-9]+)> plus <([0-9]+)>, should be <([A-Za-z]+)>" |world, matches, step| {
 			  let kc = world.keychain.as_ref().unwrap();
 				let kc_foundation = world.keychain_foundation.as_ref().unwrap();
 				let chain = world.chain.as_ref().unwrap();
 				let prev_header = chain.head_header().unwrap();
 				let height: u64 = matches[1].parse().unwrap();
 				let plus: u64 = matches[2].parse().unwrap();
+			  let expected: String = matches[3].parse().unwrap();
 
 				let keyid_dest = epic_keychain::ExtKeychainPath::new(1, 2, 0, 0, 0).to_identifier();
 				let cbdata_foundation = load_foundation_output(height);
@@ -1280,8 +1281,12 @@ mod mine_chain {
 						let result_process = chain.process_block(block, chain::Options::SKIP_POW);
 
 						match result_process {
-							Err(e) => println!("{:?}", e),
+							Err(e) => {
+								assert_eq!(expected, "Err");
+								assert!(format!("{:?}", e).contains("Attempt to spend immature coinbase"));
+							},
 							Ok(_tip) => {
+								assert_eq!(expected, "Ok");
 								assert!(chain
 												.is_unspent(&OutputIdentifier::from_output(&cbdata_foundation.output))
 												.is_err());
@@ -1293,6 +1298,7 @@ mod mine_chain {
 						};
 					},
 					Err(e) => {
+						assert_eq!(expected, "Err");
 						assert!(format!("{:?}", e).contains("Already Spent"));
 					}
 				};

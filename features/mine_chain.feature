@@ -10,7 +10,7 @@ Scenario: Test if I can spend immature foundation's coin
   And I add foundation wallet pubkeys
   And I generate new foundation's transactions
   And I make <6> blocks
-  Then I try to spend the foundation's transaction on the height <5> plus <0># (should be <1>)
+  Then I try to spend the foundation's transaction on the height <5> plus <0>, should be <Err>
 
 Scenario: Test if I can spend more foundation's coin than I have
   Given I have the policy <0> with <cuckaroo> equals <0>
@@ -22,7 +22,7 @@ Scenario: Test if I can spend more foundation's coin than I have
   And I add foundation wallet pubkeys
   And I generate new foundation's transactions
   And I make <10> blocks
-  Then I try to spend the foundation's transaction on the height <5> plus <10>
+  Then I try to spend the foundation's transaction on the height <5> plus <10>, should be <Err>
 
 Scenario: Test if I can spend foundation's transaction made before of fork
   Given I have the policy <0> with <cuckaroo> equals <0>
@@ -34,7 +34,7 @@ Scenario: Test if I can spend foundation's transaction made before of fork
   And I add foundation wallet pubkeys
   And I generate new foundation's transactions
   And I make <10> blocks
-  Then I try to spend the foundation's transaction on the height <5> plus <0>
+  Then I try to spend the foundation's transaction on the height <5> plus <0>, should be <Ok>
 
 Scenario: Test if I can spend foundation's transaction made after of fork
   Given I have the policy <0> with <cuckaroo> equals <0>
@@ -46,7 +46,7 @@ Scenario: Test if I can spend foundation's transaction made after of fork
   And I add foundation wallet pubkeys
   And I generate new foundation's transactions
   And I make <25> blocks
-  Then I try to spend the foundation's transaction on the height <20> plus <0>
+  Then I try to spend the foundation's transaction on the height <20> plus <0>, should be <Ok>
 
 Scenario: test if the foundation_floonet.json is valid
   Given I have a <floonet> chain
