@@ -1247,8 +1247,8 @@ mod mine_chain {
 				foundation::save_in_disk(serialized, &Path::new("./tests/assets"));
 				global::set_foundation_path("./tests/assets/foundation/foundation.json".to_string());
 			};
-
-		  then regex "I spend the foundation's transaction on the height <([0-9]+)> plus <([0-9]+)>" |world, matches, step| {
+		then regex "I try to spend the foundation's transaction on the height <([0-9]+)> plus <([0-9]+)>" |world, matches, step| {
+		// then regex "I try to spend (should be <([a-zA-Z]+)>) the foundation's transaction on the height <([0-9]+)> plus <([0-9]+)>" |world, matches, step| {
 			  let kc = world.keychain.as_ref().unwrap();
 				let kc_foundation = world.keychain_foundation.as_ref().unwrap();
 				let chain = world.chain.as_ref().unwrap();
@@ -1277,18 +1277,23 @@ mod mine_chain {
 
 				match result_block {
 					Ok(block) => {
-						chain.process_block(block, chain::Options::SKIP_POW).unwrap();
+						let result_process = chain.process_block(block, chain::Options::SKIP_POW);
 
-						assert!(chain
-										.is_unspent(&OutputIdentifier::from_output(&cbdata_foundation.output))
-										.is_err());
+						match result_process {
+							Err(e) => println!("{:?}", e),
+							Ok(_tip) => {
+								assert!(chain
+												.is_unspent(&OutputIdentifier::from_output(&cbdata_foundation.output))
+												.is_err());
 
-						assert!(chain
-										.is_unspent(&OutputIdentifier::from_output(&tx1.outputs()[0]))
-										.is_ok());
+								assert!(chain
+												.is_unspent(&OutputIdentifier::from_output(&tx1.outputs()[0]))
+												.is_ok());
+							}
+						};
 					},
 					Err(e) => {
-						println!("{:?}", e);
+						assert!(format!("{:?}", e).contains("Already Spent"));
 					}
 				};
 			};
